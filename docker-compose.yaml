@@ -1,0 +1,36 @@
+
+services:
+    localweatherdb:
+        image: postgres:15
+        platform: linux/amd64
+        restart: always
+        
+        environment:
+            POSTGRES_USER: shubh
+            POSTGRES_PASSWORD: 8342AdksnAKe
+            POSTGRES_DB: localweatherdb
+        ports:
+            - "5234:5432"
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        command: >
+            postgres -c listen_addresses='*' -c password_encryption=md5
+        networks:
+            - ccflocknet
+    localweatherapi:
+        platform: linux/amd64
+        build:
+            dockerfile: Dockerfile
+        ports:
+            - "8001:8001"
+        environment:
+            - ASPNETCORE_URLS=http://0.0.0.0:8001
+            - ConnectionStrings__DefaultConnection=Host=localweatherdb;Port=5432;Database=localweatherdb;Username=shubh;Password=8342AdksnAKe
+        networks:
+            - ccflocknet
+
+volumes:
+    pgdata:
+
+networks:
+    ccflocknet:
