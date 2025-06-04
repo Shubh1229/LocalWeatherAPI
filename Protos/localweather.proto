@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option csharp_namespace = "Grpc.LocalWeatherAPI";
+package localweather;
+
+service LocalWeatherService {
+    rpc GetData (DateTimeStamp) returns (DataInfo);
+    rpc GetDataRange (DateTimeStampRange) returns (DataInfoRange);
+}
+
+message DateTimeStamp {
+    string datetime = 1;
+}
+message DateTimeStampRange {
+    string startdatetime = 1;
+    string enddatetime = 2;
+}
+message DataInfo {
+    double temp = 1;
+    double humidity = 2;
+    double pressure = 3;
+    string stamp = 4;
+}
+message DataInfoRange {
+    repeated DataInfo datainfo = 1;
+}

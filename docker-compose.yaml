@@ -34,3 +34,5 @@ volumes:
 
 networks:
     ccflocknet:
+        external:
+            true
