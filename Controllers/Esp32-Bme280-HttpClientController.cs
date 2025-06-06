@@ -14,12 +14,12 @@ namespace LocalWeatherAPI.Controllers
 {
     [ApiController]
     [Route("api/esp32bme280client/[controller]")]
-    public class Esp32Bme280HttpStreamClientController : ControllerBase
+    public class Esp32Bme280HttpClientController : ControllerBase
     {
-        private readonly ILogger<Esp32Bme280HttpStreamClientController> logger;
+        private readonly ILogger<Esp32Bme280HttpClientController> logger;
         private LocalWeatherDataBaseContext db;
 
-        public Esp32Bme280HttpStreamClientController(ILogger<Esp32Bme280HttpStreamClientController> logger, LocalWeatherDataBaseContext db)
+        public Esp32Bme280HttpClientController(ILogger<Esp32Bme280HttpClientController> logger, LocalWeatherDataBaseContext db)
         {
             this.logger = logger;
             this.db = db;
@@ -170,6 +170,7 @@ namespace LocalWeatherAPI.Controllers
         {
             if (dto == null)
             {
+                logger.LogInformation($"Invalid data from sensor data was null...");
                 return Ok(new
                 {
                     success = false,
@@ -179,6 +180,7 @@ namespace LocalWeatherAPI.Controllers
             }
             if (dto.Temp <= -100 || dto.Temp >= 110 || dto.Humidity < 0 || dto.Humidity > 100 || dto.Pressure < 800 || dto.Pressure > 1200)
             {
+                logger.LogInformation($"Data was out of range: Temp {dto.Temp}, Humidity: {dto.Humidity}, Pressure: {dto.Pressure}, Stamp: {dto.Stamp}");
                 return BadRequest(new
                 {
                     success = false,
@@ -188,6 +190,7 @@ namespace LocalWeatherAPI.Controllers
             }
             if (!DateTime.TryParse(dto.Stamp, out var dateTime))
             {
+                logger.LogInformation($"Could not parse date time stamp: {dto.Stamp}");
                 return BadRequest(new
                 {
                     success = false,
@@ -196,6 +199,7 @@ namespace LocalWeatherAPI.Controllers
                 });
             }
             dateTime = dateTime.ToUniversalTime();
+            logger.LogInformation($"Properly Recieved {dto} and converted stamp {dateTime}");
             // Get or create Year
             var year = await db.YearlyWeatherData
                 .Include(y => y.Months)
@@ -271,7 +275,7 @@ namespace LocalWeatherAPI.Controllers
 
             db.WeatherData.Add(weather);
             await db.SaveChangesAsync();
-
+            logger.LogInformation($"Successfully added {weather} to database!");
             return Ok(new
             {
                 success = true,
